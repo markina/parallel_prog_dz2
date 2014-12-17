@@ -182,11 +182,14 @@ public class BankImpl implements Bank {
          *
          * Basically, implementation of this method must perform the logic of the following code "atomically":
          */
-        if (op.completed)
-            return null;
+
 
         while (true) {
             Account account = accounts.get(index);
+
+            if (op.completed)
+                return null;
+
             if (account instanceof AcquiredAccount) {
                 AcquiredAccount acquiredAccount = (AcquiredAccount) account;
                 if (acquiredAccount.op == op) {
@@ -363,21 +366,19 @@ public class BankImpl implements Bank {
                 return;
             }
 
+
             if (amount > from.amount) {
                 errorMessage = "Underflow";
-                releaseByIndex(fromIndex, toIndex);
-                return;
             }
-            if (to.amount + amount > MAX_AMOUNT) {
+            else if (to.amount + amount > MAX_AMOUNT) {
                 errorMessage = "Overflow";
-                releaseByIndex(fromIndex, toIndex);
-                return;
             }
-            from.newAmount = from.amount - amount;
-            to.newAmount = to.amount + amount;
+            else {
+                from.newAmount = from.amount - amount;
+                to.newAmount = to.amount + amount;
+            }
 
             completed = true;
-
             releaseByIndex(fromIndex, toIndex);
 
         }
